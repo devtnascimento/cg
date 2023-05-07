@@ -80,8 +80,7 @@ GLfloat bx, by;  // pontos inseridos para as curvas
 
 
 // estrutura para um ponto no espaço 3D
-struct Ponto
-{
+struct Ponto {
 	GLfloat x;
 	GLfloat y;
 	GLfloat z;
@@ -105,8 +104,7 @@ void DesenhaEixos();
 Ponto P1, P2, P3, P4;
 
 
-int main(int argc, char** argv)
-{
+int main(int argc, char** argv) {
 	glutInit(&argc, argv);
 
 	// Define do modo de operação da GLUT
@@ -160,9 +158,8 @@ void Desenha(void) {
 	DesenhaEixos();
 
 	//DesenhaParabola();
-	DesenhaBezierGrau3_v3(); // usar
-	//DesenhaHermiteGrau3(); /// usar
-
+	//DesenhaBezierGrau3_v3(); // usar
+	DesenhaHermiteGrau3(); /// usar
 
 	// Executa os comandos OpenGL 
 	glFlush();
@@ -200,7 +197,6 @@ void DesenhaEixos() {
 	glVertex2f(MENORX, 0.0f);
 	glVertex2f(MAIORX, 0.0f);
 	glEnd();
-
 }
 
 
@@ -209,7 +205,6 @@ void DesenhaEixos() {
 // no código pra vc, é a variável H. Os e pontos de Hermite são fornecidos pela interface 
 // clicando com o mouse. 
 void DesenhaHermiteGrau3() {
-
 	// Matriz de Hermite de Grau 3
 	GLfloat H[4][4] = { { 2.0f, -2.0f,  1.0f,  1.0f },
 	{ -3.0f,  3.0f, -2.0f, -1.0f },
@@ -236,7 +231,7 @@ void DesenhaHermiteGrau3() {
 	if ((TOTAL_POINTS > 0) && (GET_POINTS) && (TOTAL_POINTS < 2)) {
 		// testa se o ponto aqul clicado é diferente do anterior
 		if ((P[TOTAL_POINTS - 1][0] != bx) && (P[TOTAL_POINTS - 1][1] != by)) {
-			P[TOTAL_POINTS][0] = bx; // guarda coordenada de netrada x
+			P[TOTAL_POINTS][0] = bx; // guarda coordenada de entrada x
 			P[TOTAL_POINTS][1] = by;  // guarda coordenada de entrada y
 			P[TOTAL_POINTS][2] = tang2x;  // tangente x do aângulo de incidência de saída
 			P[TOTAL_POINTS][3] = tang2y;  // tangente y do ângulo de inciência de saída
@@ -244,8 +239,6 @@ void DesenhaHermiteGrau3() {
 			if (TOTAL_POINTS > 2)  TOTAL_POINTS = 2;
 		}
 	}
-
-
 
 	// exibe os 2  pontos de controle
 	glColor3f(1.0, 0.0f, 0.0f);
@@ -257,13 +250,41 @@ void DesenhaHermiteGrau3() {
 		glEnd();
 	}
 
-
 	// agora que vc tem os dois pontos e as duas tangentes, que estão em P
 	// basta só utilizar a teoria vista nos vídeos para montar o polinomio de Hermote 
 	// e plotar a curva. Não se esqueça de variar a variável t de 0 a 1, indo de
 	// 0.1 em 0.1, pelo menos, ou 0.01 em 0.01. 
 	if (TOTAL_POINTS == 2) {
 		// calcule aqui sua curva de hermite
+		
+		glBegin(GL_LINE_STRIP);
+		for (GLfloat t=0.0; t <= 1.0; t+=0.01) {
+
+			GLfloat T[4] {pow(t, 3.0f), pow(t, 2.0f), t, 1};
+
+			GLfloat x, y;
+			// calcula a direcao x
+			// P[0][0] = x(0)
+			// P[1][0] = x(1)
+			// P[0][2] = x'(0)
+			// P[1][2] = x'(1)
+			GLfloat Mx[4] = {P[0][0], P[1][0], P[0][2],  P[1][2]};
+			x = multiplyHermite(T, H, Mx);
+
+			// calcula a direcao y
+			// P[0][1] = y(0)
+			// P[1][1] = y(1)
+			// P[0][3] = y'(0)
+			// P[1][3] = y'(1)
+			GLfloat My[4] = {P[0][1], P[1][1], P[0][3],  P[1][3]};
+			y = multiplyHermite(T, H, My);
+			//std::cout << "P(" << t << ") = (" << x << ", " << y << ")\n";
+
+			// plota no ogl
+			glVertex2f(x, y);
+
+		}
+		glEnd();
 	}
 
 	// com todos os pontos calculados, agora vc plota a curva toda
@@ -273,10 +294,9 @@ void DesenhaHermiteGrau3() {
 
 }
 
-
+ 
 
 void DesenhaBezierGrau3_v3() {
-	std::cout << "[Desenha Bezier]\n";
 	const GLint DIMX = MENORX_BEZIER + MAIORX_BEZIER + 1;
 	const GLint DIMY = MENORY_BEZIER + MAIORY_BEZIER + 1;
 
@@ -287,7 +307,6 @@ void DesenhaBezierGrau3_v3() {
    	// se o numero de pontos fornecidos for zero
    	// GET_POINTSD = Status de atribuição de pontos pelo mouse
 	if ((TOTAL_POINTS == 0) && (GET_POINTS)) {
-		std::cout << "Primeiro ponto:\n";
 		std::cout << "B(" << bx << ", " << ")\n";
 		B[0][0] = bx; // coordenada x do primeiro ponto
 		B[0][1] = by; // ordenada y do primeiro ponto
@@ -306,7 +325,6 @@ void DesenhaBezierGrau3_v3() {
 			B[TOTAL_POINTS][1] = by;
 			TOTAL_POINTS = TOTAL_POINTS + 1;
 			if (TOTAL_POINTS > 4)  TOTAL_POINTS = 4;
-			std::cout << "C(" << B[TOTAL_POINTS][0] << ", " << B[TOTAL_POINTS][1] << ")\n";
 		}
 	}
 
@@ -316,7 +334,6 @@ void DesenhaBezierGrau3_v3() {
 	glPointSize(5.0f);
 	//printf("\n\n");
 	for (int i = 0; i < TOTAL_POINTS; i++) {
-		printf("C(%f, %f)\n", B[i][0], B[i][1]);
 		glBegin(GL_POINTS);
 		glVertex2f(B[i][0], B[i][1]);
 		glEnd();
@@ -345,17 +362,7 @@ void DesenhaBezierGrau3_v3() {
 		}
 		glEnd();
 	}
-
-	// com todos os pontos calculados no trecho anterior, agora vc plota a curva toda
-	// se tiver dúvida como fazer isso, observe o código da Função 
-	// DesenhaParabola(), nele vcja como a parábola foi plotada e
-	// faça o mesmo para a curva de hermite
-
-
-
 }
-
-
 
 void DesenhaParabola() {
 
@@ -456,31 +463,28 @@ void Inicializa(void) {
 
 void myMousefuncBezierIterate(int button, int state, int x, int y) {
 	switch (button) {
-	case GLUT_LEFT_BUTTON: {
-		bx = x;
-		by = 400 - y;
-		GET_POINTS = 1;
-		//if (TOTAL_POINTS == 4) TOTAL_POINTS = 0;
-		//printf("\n %f %f\n", bx, by);
-		break;
-	}
-	case GLUT_RIGHT_BUTTON: {
+		case GLUT_LEFT_BUTTON: {
+			bx = x;
+			by = 400 - y;
+			GET_POINTS = 1;
+			//if (TOTAL_POINTS == 4) TOTAL_POINTS = 0;
+			//printf("\n %f %f\n", bx, by);
+			break;
+		}
+		case GLUT_RIGHT_BUTTON: {
 
-		GET_POINTS = 0;
-		TOTAL_POINTS = 0;
-		//glutPostRedisplay();
-		break;
-	}
-	case GLUT_MIDDLE_BUTTON: {
-
-		break;
-	}
+			GET_POINTS = 0;
+			TOTAL_POINTS = 0;
+			//glutPostRedisplay();
+			break;
+		}
+		case GLUT_MIDDLE_BUTTON: {
+			break;
+		}
 	};
 
 	glutPostRedisplay();
 }
-
-
 
 
 void myMousefunc(int button, int state, int x, int y) {
@@ -517,33 +521,29 @@ void myMousefunc(int button, int state, int x, int y) {
 	// };
 
 	glutPostRedisplay();
-
 }
 
 
 
 
 // função que multiplica as 3 matrizes de Hermite T * H * M, onde M = {X,Y}
-GLfloat multiplyHermite(GLfloat T[], GLfloat H[][4], GLfloat M[])
-{
+GLfloat multiplyHermite(GLfloat T[], GLfloat H[][4], GLfloat M[]) {
 
 	GLfloat HM[4];
-
-	// m ultiplica primeiro H por M
-	for (int i = 0; i < 4; i++)
-	{
+	// multiplica primeiro H por M
+	for (int i = 0; i < 4; i++) {
 		HM[i] = 0;
-		for (int j = 0; j < 4; j++)
-		{
+		for (int j = 0; j < 4; j++) {
 			HM[i] = HM[i] + H[i][j] * M[j];
+			std::cout << H[i][j] << " ";
 		}
+		std::cout << std::endl;
 	}
-
+	std::cout << std::endl;
 
 	// multiplica T * HM
 	GLfloat R = 0;
-	for (int i = 0; i < 4; i++)
-	{
+	for (int i = 0; i < 4; i++) {
 		R = R + T[i] * HM[i];
 	}
 
