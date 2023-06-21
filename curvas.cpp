@@ -63,10 +63,10 @@ GLfloat xmouse, ymouse;
 #define POSWY 150
 
 // tangentes iniciais e finais dos dois pontos da curva de Hermite
-#define tang1x 10.0f
-#define tang1y -145.0f
-#define tang2x 10.0f
-#define tang2y -185.0f
+#define tang1x 1000.0f
+#define tang1y -1000.0f
+#define tang2x 1000.0f
+#define tang2y 1000.0f
 
 // Polinomio de Bezier e Hermite
 GLfloat B[4][2]; // para Bezier
